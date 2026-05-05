@@ -82,7 +82,7 @@ button {
     color: white;
     padding: 5px 8px;
     font-size: 12px;
-    border-radius: 6%;
+    border-radius: 6px;
     width: 28px;
     height: 28px;
     display: flex;
@@ -101,15 +101,10 @@ button {
     flex: 1;
 }
 
-.remaining-box {
-    background: var(--green-light);
-    padding: 10px;
-    border-radius: 6px;
-    text-align: center;
-    font-weight: bold;
+/* TABLE */
+.table-wrapper {
+    overflow-x: auto;
 }
-
-.table-wrapper { overflow-x: auto; }
 
 table {
     width: 100%;
@@ -138,25 +133,18 @@ th, td {
 <div class="card">
     <h2>Election Input</h2>
 
-    <input type="number" id="totalVoters" placeholder="Total Voters" oninput="updateRemaining()">
-
     <div id="partyContainer"></div>
 
     <div class="btn-group">
         <button class="btn-primary" onclick="addParty()">+ Add Party</button>
-        <button class="btn-primary" onclick="fillRemaining()">Use Remaining</button>
         <button class="btn-primary" onclick="calculateSeats()">Calculate</button>
-    </div>
-
-    <div class="remaining-box">
-        Remaining Votes: <span id="remainingVotes">0</span>
     </div>
 </div>
 
 <div class="card">
     <h2>Summary</h2>
     <p>Parties: <b id="totalParties">0</b></p>
-    <p>Seats Allocated: <b id="allocatedSeats">0</b></p>
+    <p>Total Voters: <b id="totalVoters">0</b></p>
 </div>
 
 <div class="card">
@@ -186,7 +174,6 @@ th, td {
 
 <script>
 let chart;
-let activeVoteInput = null;
 
 // ADD PARTY
 function addParty() {
@@ -197,29 +184,15 @@ function addParty() {
         <input type="number" placeholder="Votes">
         <button class="btn-danger" onclick="removeParty(this)">✕</button>
     `;
-
-    const voteInput = div.children[1];
-
-    // 🎯 track focused input
-    voteInput.addEventListener("focus", () => {
-        activeVoteInput = voteInput;
-    });
-
-    voteInput.addEventListener("input", updateRemaining);
-
     document.getElementById("partyContainer").appendChild(div);
 }
 
-// REMOVE
+// REMOVE PARTY
 function removeParty(btn) {
-    if (activeVoteInput === btn.parentElement.children[1]) {
-        activeVoteInput = null;
-    }
     btn.parentElement.remove();
-    updateRemaining();
 }
 
-// TOTAL ENTERED
+// GET TOTAL VOTES (AUTO TOTAL VOTERS)
 function getTotalVotesEntered() {
     let total = 0;
     document.querySelectorAll("#partyContainer input[type='number']")
@@ -227,32 +200,12 @@ function getTotalVotesEntered() {
     return total;
 }
 
-// REMAINING
-function updateRemaining() {
-    const total = Number(document.getElementById("totalVoters").value) || 0;
-    const used = getTotalVotesEntered();
-    document.getElementById("remainingVotes").innerText = Math.max(total - used, 0);
-}
-
-// 🎯 FIXED: fill selected input
-function fillRemaining() {
-    const total = Number(document.getElementById("totalVoters").value) || 0;
-    const used = getTotalVotesEntered();
-    const remaining = total - used;
-
-    if (remaining <= 0) return alert("No remaining votes!");
-    if (!activeVoteInput) return alert("Select a vote input first!");
-
-    activeVoteInput.value = remaining;
-    updateRemaining();
-}
-
 // CALCULATE
 function calculateSeats() {
-    const totalVoters = Number(document.getElementById("totalVoters").value);
-    if (!totalVoters) return alert("Enter total voters!");
-
     let parties = [];
+    const totalVoters = getTotalVotesEntered();
+
+    if (totalVoters === 0) return alert("Enter votes first!");
 
     document.querySelectorAll(".party-row").forEach((row, i) => {
         let name = row.children[0].value || `Party ${i+1}`;
@@ -266,8 +219,6 @@ function calculateSeats() {
         parties.push({ name, votes, percentage, seats });
     });
 
-    if (parties.length === 0) return alert("Enter party votes!");
-
     let allocated = parties.reduce((s,p)=>s+p.seats,0);
     let remaining = 40 - allocated;
 
@@ -280,12 +231,15 @@ function calculateSeats() {
         i=(i+1)%parties.length;
     }
 
-    displayResults(parties, allocated);
+    displayResults(parties);
     drawGraph(parties);
+
+    document.getElementById("totalParties").innerText = parties.length;
+    document.getElementById("totalVoters").innerText = totalVoters;
 }
 
-// DISPLAY
-function displayResults(parties, allocated) {
+// DISPLAY RESULTS
+function displayResults(parties) {
     const tbody = document.getElementById("resultsBody");
     tbody.innerHTML = "";
 
@@ -299,12 +253,9 @@ function displayResults(parties, allocated) {
             <td>${p.seats}</td>
         </tr>`;
     });
-
-    document.getElementById("totalParties").innerText = parties.length;
-    document.getElementById("allocatedSeats").innerText = allocated;
 }
 
-// GRAPH (fixed label issue)
+// GRAPH
 function drawGraph(parties){
     const labels = parties.map(p=>p.name);
     const votes = parties.map(p=>p.votes);
@@ -325,7 +276,7 @@ function drawGraph(parties){
         },
         options:{
             plugins:{
-                legend: { display: false }, // ❌ remove "undefined"
+                legend:{ display:false },
                 tooltip:{
                     callbacks:{
                         label:(c)=>{
