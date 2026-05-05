@@ -1,9 +1,8 @@
 let chart;
 
 // =======================
-// SAVE + LOAD (localStorage)
+// SAVE + LOAD
 // =======================
-
 function saveData() {
     const rows = document.querySelectorAll(".party-row");
     let data = [];
@@ -24,15 +23,12 @@ function loadData() {
 
     const data = JSON.parse(saved);
 
-    data.forEach(p => {
-        addParty(p.name, p.votes);
-    });
+    data.forEach(p => addParty(p.name, p.votes));
 }
 
 // =======================
 // ADD PARTY
 // =======================
-
 function addParty(name = "", votes = "") {
     const div = document.createElement("div");
     div.className = "party-row";
@@ -45,29 +41,30 @@ function addParty(name = "", votes = "") {
 
     const inputs = div.querySelectorAll("input");
 
-    // auto-save on typing
     inputs.forEach(input => {
         input.addEventListener("input", () => {
             saveData();
+            updateSummary();   // 🔥 REALTIME UPDATE
         });
     });
 
     document.getElementById("partyContainer").appendChild(div);
+
+    updateSummary(); // update instantly
 }
 
 // =======================
 // REMOVE PARTY
 // =======================
-
 function removeParty(btn) {
     btn.parentElement.remove();
     saveData();
+    updateSummary(); // 🔥 REALTIME UPDATE
 }
 
 // =======================
 // TOTAL VOTES
 // =======================
-
 function getTotalVotesEntered() {
     let total = 0;
     document.querySelectorAll("#partyContainer input[type='number']")
@@ -76,9 +73,19 @@ function getTotalVotesEntered() {
 }
 
 // =======================
+// 🔥 REALTIME SUMMARY
+// =======================
+function updateSummary() {
+    const parties = document.querySelectorAll(".party-row").length;
+    const totalVotes = getTotalVotesEntered();
+
+    document.getElementById("totalParties").innerText = parties;
+    document.getElementById("totalVoters").innerText = totalVotes;
+}
+
+// =======================
 // CALCULATE
 // =======================
-
 function calculateSeats() {
     let parties = [];
     const totalVoters = getTotalVotesEntered();
@@ -111,17 +118,11 @@ function calculateSeats() {
 
     displayResults(parties);
     drawGraph(parties);
-
-    document.getElementById("totalParties").innerText = parties.length;
-    document.getElementById("totalVoters").innerText = totalVoters;
-
-    saveData(); // save after calculation
 }
 
 // =======================
 // DISPLAY
 // =======================
-
 function displayResults(parties) {
     const tbody = document.getElementById("resultsBody");
     tbody.innerHTML = "";
@@ -141,7 +142,6 @@ function displayResults(parties) {
 // =======================
 // GRAPH
 // =======================
-
 function drawGraph(parties){
     const labels = parties.map(p=>p.name);
     const votes = parties.map(p=>p.votes);
@@ -183,12 +183,12 @@ function drawGraph(parties){
 }
 
 // =======================
-// INIT (LOAD SAVED DATA)
+// INIT
 // =======================
-
 window.onload = () => {
     loadData();
     if (document.querySelectorAll(".party-row").length === 0) {
         addParty();
     }
+    updateSummary(); // 🔥 initial sync
 };
