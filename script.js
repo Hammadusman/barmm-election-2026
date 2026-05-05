@@ -1,7 +1,7 @@
 let chart;
 
 // =======================
-// SAVE + LOAD
+// SAVE DATA
 // =======================
 function saveData() {
     const rows = document.querySelectorAll(".party-row");
@@ -17,13 +17,18 @@ function saveData() {
     localStorage.setItem("barmm_parties", JSON.stringify(data));
 }
 
+// =======================
+// LOAD DATA
+// =======================
 function loadData() {
     const saved = localStorage.getItem("barmm_parties");
     if (!saved) return;
 
     const data = JSON.parse(saved);
 
-    data.forEach(p => addParty(p.name, p.votes));
+    data.forEach(p => {
+        addParty(p.name, p.votes);
+    });
 }
 
 // =======================
@@ -39,18 +44,21 @@ function addParty(name = "", votes = "") {
         <button class="btn-danger" onclick="removeParty(this)">✕</button>
     `;
 
-    const inputs = div.querySelectorAll("input");
+    const nameInput = div.children[0];
+    const voteInput = div.children[1];
 
-    inputs.forEach(input => {
-        input.addEventListener("input", () => {
-            saveData();
-            updateSummary();   // 🔥 REALTIME UPDATE
-        });
+    // 🔥 REALTIME UPDATE FOR VOTES
+    voteInput.addEventListener("input", () => {
+        saveData();
+        updateSummary();
     });
+
+    // save name changes too
+    nameInput.addEventListener("input", saveData);
 
     document.getElementById("partyContainer").appendChild(div);
 
-    updateSummary(); // update instantly
+    updateSummary();
 }
 
 // =======================
@@ -59,7 +67,7 @@ function addParty(name = "", votes = "") {
 function removeParty(btn) {
     btn.parentElement.remove();
     saveData();
-    updateSummary(); // 🔥 REALTIME UPDATE
+    updateSummary();
 }
 
 // =======================
@@ -67,8 +75,10 @@ function removeParty(btn) {
 // =======================
 function getTotalVotesEntered() {
     let total = 0;
+
     document.querySelectorAll("#partyContainer input[type='number']")
         .forEach(i => total += Number(i.value) || 0);
+
     return total;
 }
 
@@ -76,15 +86,15 @@ function getTotalVotesEntered() {
 // 🔥 REALTIME SUMMARY
 // =======================
 function updateSummary() {
-    const parties = document.querySelectorAll(".party-row").length;
     const totalVotes = getTotalVotesEntered();
+    const parties = document.querySelectorAll(".party-row").length;
 
     document.getElementById("totalParties").innerText = parties;
     document.getElementById("totalVoters").innerText = totalVotes;
 }
 
 // =======================
-// CALCULATE
+// CALCULATE SEATS
 // =======================
 function calculateSeats() {
     let parties = [];
@@ -118,10 +128,12 @@ function calculateSeats() {
 
     displayResults(parties);
     drawGraph(parties);
+
+    saveData();
 }
 
 // =======================
-// DISPLAY
+// DISPLAY RESULTS
 // =======================
 function displayResults(parties) {
     const tbody = document.getElementById("resultsBody");
@@ -168,7 +180,7 @@ function drawGraph(parties){
                 tooltip:{
                     callbacks:{
                         label:(c)=>{
-                            let i=c.dataIndex;
+                            let i = c.dataIndex;
                             return [
                                 `Votes: ${votes[i]}`,
                                 `Seats: ${seats[i]}`,
@@ -187,8 +199,10 @@ function drawGraph(parties){
 // =======================
 window.onload = () => {
     loadData();
+
     if (document.querySelectorAll(".party-row").length === 0) {
         addParty();
     }
-    updateSummary(); // 🔥 initial sync
+
+    updateSummary();
 };
