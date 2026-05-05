@@ -155,39 +155,59 @@ function displayResults(parties) {
 // GRAPH
 // =======================
 function drawGraph(parties){
-    const labels = parties.map(p=>p.name);
-    const votes = parties.map(p=>p.votes);
-    const seats = parties.map(p=>p.seats);
+    const labels = parties.map(p => p.name);
+    const votes = parties.map(p => p.votes);
+    const seats = parties.map(p => p.seats);
 
-    const colors = labels.map((_,i)=>
-        `hsl(${i*360/labels.length},70%,60%)`
+    const colors = labels.map((_, i) =>
+        `hsl(${i * 360 / labels.length}, 70%, 60%)`
     );
 
-    if(chart) chart.destroy();
+    if (chart) chart.destroy();
 
-    chart = new Chart(document.getElementById("chart"),{
-        type:"bar",
-        data:{
-            labels,
-            datasets:[{
-                data:votes,
-                backgroundColor:colors
+    chart = new Chart(document.getElementById("chart"), {
+        type: "bar",
+        data: {
+            labels, // 👉 bottom (x-axis = parties)
+            datasets: [{
+                label: "Total Votes", // 👉 side label meaning
+                data: votes,
+                backgroundColor: colors
             }]
         },
-        options:{
-            plugins:{
-                legend:{ display:false },
-                tooltip:{
-                    callbacks:{
-                        label:(c)=>{
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: "top"
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (c) => {
                             let i = c.dataIndex;
                             return [
                                 `Votes: ${votes[i]}`,
                                 `Seats: ${seats[i]}`,
-                                `Rank: ${i+1}`
+                                `Rank: ${i + 1}`
                             ];
                         }
                     }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: "Political Parties" // 👉 bottom label
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: "Total Votes" // 👉 side label
+                    },
+                    beginAtZero: true
                 }
             }
         }
