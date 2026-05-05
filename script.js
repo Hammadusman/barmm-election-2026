@@ -1,1 +1,124 @@
 
+let chart;
+
+// ADD PARTY
+function addParty() {
+    const div = document.createElement("div");
+    div.className = "party-row";
+    div.innerHTML = `
+        <input type="text" placeholder="Party Name">
+        <input type="number" placeholder="Votes">
+        <button class="btn-danger" onclick="removeParty(this)">✕</button>
+    `;
+    document.getElementById("partyContainer").appendChild(div);
+}
+
+// REMOVE PARTY
+function removeParty(btn) {
+    btn.parentElement.remove();
+}
+
+// TOTAL VOTES
+function getTotalVotesEntered() {
+    let total = 0;
+    document.querySelectorAll("#partyContainer input[type='number']")
+        .forEach(i => total += Number(i.value) || 0);
+    return total;
+}
+
+// CALCULATE SEATS
+function calculateSeats() {
+    let parties = [];
+    const totalVoters = getTotalVotesEntered();
+
+    if (totalVoters === 0) return alert("Enter votes first!");
+
+    document.querySelectorAll(".party-row").forEach((row, i) => {
+        let name = row.children[0].value || `Party ${i+1}`;
+        let votes = Number(row.children[1].value);
+
+        if (!votes) return;
+
+        let percentage = Math.floor((votes / totalVoters) * 100);
+        let seats = Math.floor((percentage * 40) / 100);
+
+        parties.push({ name, votes, percentage, seats });
+    });
+
+    let allocated = parties.reduce((s,p)=>s+p.seats,0);
+    let remaining = 40 - allocated;
+
+    parties.sort((a,b)=>b.votes-a.votes);
+
+    let i = 0;
+    while (remaining > 0) {
+        parties[i].seats++;
+        remaining--;
+        i = (i + 1) % parties.length;
+    }
+
+    displayResults(parties);
+    drawGraph(parties);
+
+    document.getElementById("totalParties").innerText = parties.length;
+    document.getElementById("totalVoters").innerText = totalVoters;
+}
+
+// DISPLAY RESULTS
+function displayResults(parties) {
+    const tbody = document.getElementById("resultsBody");
+    tbody.innerHTML = "";
+
+    parties.forEach((p,i)=>{
+        tbody.innerHTML += `
+        <tr>
+            <td>${i+1}</td>
+            <td>${p.name}</td>
+            <td>${p.votes}</td>
+            <td>${p.percentage}%</td>
+            <td>${p.seats}</td>
+        </tr>`;
+    });
+}
+
+// GRAPH
+function drawGraph(parties){
+    const labels = parties.map(p=>p.name);
+    const votes = parties.map(p=>p.votes);
+    const seats = parties.map(p=>p.seats);
+
+    const colors = labels.map((_,i)=>`hsl(${i*360/labels.length},70%,60%)`);
+
+    if(chart) chart.destroy();
+
+    chart = new Chart(document.getElementById("chart"),{
+        type:"bar",
+        data:{
+            labels,
+            datasets:[{
+                data:votes,
+                backgroundColor:colors
+            }]
+        },
+        options:{
+            plugins:{
+                legend:{ display:false },
+                tooltip:{
+                    callbacks:{
+                        label:(c)=>{
+                            let i=c.dataIndex;
+                            return [
+                                `Votes: ${votes[i]}`,
+                                `Seats: ${seats[i]}`,
+                                `Rank: ${i+1}`
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// INIT
+window.onload = ()=>addParty();
