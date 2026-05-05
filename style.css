@@ -1,1 +1,116 @@
 
+:root {
+    --green-main: #15803d;
+    --green-light: #dcfce7;
+    --green-hover: #166534;
+    --danger: #dc2626;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    background: #f0fdf4;
+}
+
+header {
+    background: var(--green-main);
+    color: white;
+    padding: 16px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.container {
+    max-width: 950px;
+    margin: auto;
+    padding: 15px;
+}
+
+.card {
+    background: white;
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+h2 {
+    color: var(--green-main);
+}
+
+input {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+button {
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    flex: 1;
+}
+
+.btn-primary {
+    background: var(--green-main);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--green-hover);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+    padding: 5px 8px;
+    font-size: 12px;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.party-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.party-row input {
+    flex: 1;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    min-width: 500px;
+    border-collapse: collapse;
+}
+
+th {
+    background: var(--green-light);
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
