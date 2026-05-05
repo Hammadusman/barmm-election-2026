@@ -169,12 +169,12 @@ function drawGraph(parties){
         type: "bar",
         data: {
             labels, // 👉 bottom (x-axis = parties)
-           /* datasets: [{
+           datasets: [{
                 label: "Total Votes", // 👉 side label meaning
                 data: votes,
                 backgroundColor: colors
             }]
-*/
+
         },
         options: {
             responsive: true,
